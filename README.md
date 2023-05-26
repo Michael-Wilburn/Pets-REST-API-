@@ -182,3 +182,8 @@ This would be the **application layer** of our project.
 Here we're basically setting up our server and declaring that any request that hits the `/pets` direction should use the routes (endpoints) we have declared in the `./pets/routes/pets.routes.js` directory.
 
 Next, go ahead and create this folder structure in your project:
+
+<p align="center">
+  <img width="600" height="520" src="https://github.com/Michael-Wilburn/Pets-REST-API-/blob/main/folderStructure.png">
+  Folder Structure
+</p>
