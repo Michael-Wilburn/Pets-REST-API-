@@ -92,4 +92,6 @@ The matter of how many layers should your project have, what names should each l
 
 Our application will have five different layers, which will be ordered in this way:
 
-![alt text](https://github.com/Michael-Wilburn/Pets-REST-API-/blob/main/architecture.png?raw=true)
+![alt text](https://github.com/Michael-Wilburn/Pets-REST-API-/blob/main/architecture.png)
+
+Application layers
