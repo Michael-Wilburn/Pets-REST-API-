@@ -63,9 +63,10 @@ In summary, REST APIs are a popular and widely used architectural style for buil
 
 While there are some limitations and concerns with REST APIs, they remain a popular and effective option for building APIs in many different industries and sectors.
 
-#How to Build a REST API with Node and Express
+# How to Build a REST API with Node and Express
 
-##Our tools
+## Our tools
+
 [Node.js](https://nodejs.org/en) is an open-source, cross-platform, back-end JavaScript runtime environment that allows developers to execute JavaScript code outside of a web browser. It was created by Ryan Dahl in 2009 and has since become a popular choice for building web applications, APIs, and servers.
 
 Node.js provides an event-driven, non-blocking I/O model that makes it lightweight and efficient, allowing it to handle large amounts of data with high performance. It also has a large and active community, with many libraries and modules available to help developers build their applications more quickly and easily.
@@ -93,7 +94,8 @@ The matter of how many layers should your project have, what names should each l
 Our application will have five different layers, which will be ordered in this way:
 
 <p align="center">
-  <img width="600" height="520" src="https://github.com/Michael-Wilburn/Pets-REST-API-/blob/main/architecture.png">
+  <img width="580" height="500" src="https://github.com/Michael-Wilburn/Pets-REST-API-/blob/main/architecture.png">
+  <br>
   Application layers
 </p>
 
@@ -184,6 +186,216 @@ Here we're basically setting up our server and declaring that any request that h
 Next, go ahead and create this folder structure in your project:
 
 <p align="center">
-  <img width="600" height="520" src="https://github.com/Michael-Wilburn/Pets-REST-API-/blob/main/folderStructure.png">
+  <img width="450" height="400" src="https://github.com/Michael-Wilburn/Pets-REST-API-/blob/main/folderStructure.png">
+  <br>
   Folder Structure
 </p>
+
+## Routes
+
+Hop on to the routes folder, create a file called `pets.routes.js`, and drop this code in it:
+
+```javascript
+import express from 'express';
+import {
+  listPets,
+  getPet,
+  editPet,
+  addPet,
+  deletePet,
+} from '../controllers/pets.controllers.js';
+
+const router = express.Router();
+
+router.get('/', listPets);
+
+router.get('/:id', getPet);
+
+router.put('/:id', editPet);
+
+router.post('/', addPet);
+
+router.delete('/:id', deletePet);
+
+export default router;
+```
+
+In this file we're initializing a router (the thing that processes our request and directs them accordingly given the endpoint URL) and setting up each of our endpoints.
+
+See that for each endpoint we declare the corresponding HTTP method (`get`, `put`,`post`,`delete`) and the corresponding function that that endpoint will trigger (listPets, getPet, and so on). Each function name is quite explicit so we can easily know what each endpoint does without needing to see further code. ;)
+
+Lastly, we also declare which endpoint will receive URL parameters on the requests like this: `router.get("/:id", getPet);` Here we're saying that we'll receive the `id` of the pet as an URL parameter.
+
+## Controllers
+
+Now go to the controllers folder, create a `pets.controllers.js` file, and put this code in it:
+
+```javascript
+import {
+  getItem,
+  listItems,
+  editItem,
+  addItem,
+  deleteItem,
+} from '../models/pets.models.js';
+
+export const getPet = (req, res) => {
+  try {
+    const resp = getItem(parseInt(req.params.id));
+    res.status(200).json(resp);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+};
+
+export const listPets = (req, res) => {
+  try {
+    const resp = listItems();
+    res.status(200).json(resp);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+};
+
+export const editPet = (req, res) => {
+  try {
+    const resp = editItem(parseInt(req.params.id), req.body);
+    res.status(200).json(resp);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+};
+
+export const addPet = (req, res) => {
+  try {
+    const resp = addItem(req.body);
+    res.status(200).json(resp);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+};
+
+export const deletePet = (req, res) => {
+  try {
+    const resp = deleteItem(parseInt(req.params.id));
+    res.status(200).json(resp);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+};
+```
+
+Controllers are the functions that each endpoint request will trigger. As you can see, they receive as parameters the request and response objects. In the request object we can read things such as URL or body parameters, and we'll use the response object to send our response after doing the corresponding computation.
+
+Each controller calls a specific function defined in our models.
+
+## Model
+
+Now go to the models folder and create a `pets.models.js` file with this code in it:
+
+```javascript
+import db from '../../db/db.js';
+
+export const getItem = (id) => {
+  try {
+    const pet = db?.pets?.filter((pet) => pet?.id === id)[0];
+    return pet;
+  } catch (err) {
+    console.log('Error', err);
+  }
+};
+
+export const listItems = () => {
+  try {
+    return db?.pets;
+  } catch (err) {
+    console.log('Error', err);
+  }
+};
+
+export const editItem = (id, data) => {
+  try {
+    const index = db.pets.findIndex((pet) => pet.id === id);
+
+    if (index === -1) throw new Error('Pet not found');
+    else {
+      db.pets[index] = data;
+      return db.pets[index];
+    }
+  } catch (err) {
+    console.log('Error', err);
+  }
+};
+
+export const addItem = (data) => {
+  try {
+    const newPet = { id: db.pets.length + 1, ...data };
+    db.pets.push(newPet);
+    return newPet;
+  } catch (err) {
+    console.log('Error', err);
+  }
+};
+
+export const deleteItem = (id) => {
+  try {
+    // delete item from db
+    const index = db.pets.findIndex((pet) => pet.id === id);
+
+    if (index === -1) throw new Error('Pet not found');
+    else {
+      db.pets.splice(index, 1);
+      return db.pets;
+    }
+  } catch (error) {}
+};
+```
+
+These are the functions responsible for interacting with our data layer (database) and returning the corresponding information to our controllers.
+
+## Database
+
+We wont use a real database for this example. Instead we'll just use a simple array that will work just fine for example purposes, though our data will of course reset every time our server does.
+
+In the root of our project, create a `db` folder and a `db.js` file with this code in it:
+
+```javascript
+const db = {
+  pets: [
+    {
+      id: 1,
+      name: 'Rex',
+      type: 'dog',
+      age: 3,
+      breed: 'labrador',
+    },
+    {
+      id: 2,
+      name: 'Fido',
+      type: 'dog',
+      age: 1,
+      breed: 'poodle',
+    },
+    {
+      id: 3,
+      name: 'Mittens',
+      type: 'cat',
+      age: 2,
+      breed: 'tabby',
+    },
+    {
+      id: 4,
+      name: 'Milo',
+      type: 'dog',
+      age: 4,
+      breed: 'Jack Russel Terrier',
+    },
+  ],
+};
+
+export default db;
+```
+
+As you can see, our `db` object contains a `pets` property whose value is an array of objects, each object being a pet. For each pet, we store an id, name, type, age and breed.
+
+Now go to your terminal and run `nodemon app.js`. You should see this message confirming your server is alive: ⚡️`[server]: Server is running at https://localhost:3000`.

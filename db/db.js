@@ -21,6 +21,13 @@ const db = {
       age: 2,
       breed: 'tabby',
     },
+    {
+      id: 4,
+      name: 'Milo',
+      type: 'dog',
+      age: 4,
+      breed: 'Jack Russel Terrier',
+    },
   ],
 };
 
